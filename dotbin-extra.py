@@ -15,6 +15,13 @@
     On windows, adding a `shim:` prefix to the link will create a BATCH shortcut instead of a symlink
       that calls the underlying executable with absolute path. On Linux, bash shortcut is created
 
+    Create `dotbin/extra/portable/windows-alias` text file for adding alias for Windows
+    The format is:
+      <target>:<alias>,<alias>...
+      ...
+    Like: nvim.exe:vi.exe,vim.exe
+    Spaces are trimmed
+
     --force will delete existing symlinks/shims
 
     So you can install new portable software with
@@ -70,6 +77,7 @@ def create_bash_shim(symlink_dir, path):
         f.write("#!/usr/bin/bash\n")
         executable = os.path.abspath(path)
         f.write(f"exec \"{executable}\" \"$@\"")
+    subprocess.run(["chmod", "+x", shim_path], check=True)
 
 def create_shim(symlink_dir, path):
     if WINDOWS:
@@ -101,6 +109,18 @@ def link_glob(symlink_dir, portable_dir, glob_pattern):
         else:
             create_link(symlink_dir, os.path.join(portable_dir, rel_path))
 
+def create_alias(symlink_dir, target, aliases):
+    target_path = os.path.join(symlink_dir, target)
+    if not os.path.exists(target_path):
+        print(f"warning: alias target {target_path} doesn't exist, skipping")
+        return
+    for alias in aliases:
+        alias_path = os.path.join(symlink_dir, alias)
+        if os.path.exists(alias_path):
+            continue
+        print(f"ln -s {target_path} {alias_path}")
+        subprocess.run(["ln", "-s", target_path, alias_path], check=True)
+
 
 def link(force):
     extra_dir = find_extra_dir()
@@ -111,9 +131,26 @@ def link(force):
         os.makedirs(symlink_dir)
     portable_dir = os.path.join(extra_dir, "portable")
     link_file = os.path.join(portable_dir, "link")
-    with open(link_file, "r", encoding="utf-8") as f:
-        for line in f:
-            link_glob(symlink_dir, portable_dir, line.strip())
+    if not os.path.exists(link_file):
+        print(f"warning: link file {link_file} doesn't exist, skipping")
+    else:
+        with open(link_file, "r", encoding="utf-8") as f:
+            for line in f:
+                link_glob(symlink_dir, portable_dir, line.strip())
+    if WINDOWS:
+        alias_file = os.path.join(portable_dir, "windows-alias")
+        if not os.path.exists(alias_file):
+            print(f"warning: alias file {alias_file} doesn't exist, skipping")
+        else:
+            with open(alias_file, "r", encoding="utf-8") as f:
+                for line in f:
+                    if ":" not in line:
+                        print("warning: missing `:` in line in alias file, skipping")
+                        continue
+                    target, rest = line.split(":", 1)
+                    aliases = [x.strip() for x in rest.split(",")]
+                    create_alias(symlink_dir, target.strip(), aliases)
+
     
 if __name__ == "__main__":
     if len(sys.argv) < 2:
