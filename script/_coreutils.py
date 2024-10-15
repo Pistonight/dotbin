@@ -4,7 +4,7 @@ import os
 from multiprocessing import Pool, cpu_count
 
 def install_cargo_binstall():
-    result = subprocess.run(["cargo", "install", "binstall"])
+    result = subprocess.run(["cargo", "install", "cargo-binstall"])
     if result.returncode != 0:
         raise Exception("Failed to install binstall, please check Rust toolchain installation")
 
