@@ -1,0 +1,12 @@
+[package]
+name = "dotbin-windows"
+version = "0.0.0"
+edition = "2021"
+
+[[bin]]
+path = "which.rs"
+name = "which"
+
+[dependencies]
+clap = { version = "4.5.20", features = ["derive"] }
+which = "6.0.3"

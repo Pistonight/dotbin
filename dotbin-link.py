@@ -2,13 +2,12 @@
 """
     Manager for dotbin/extra
 
-    `dotbin-extra setup` Will create the extra directories to get started.
     You will put any portable software package in `dotbin/extra/portable`
     and any single-binary portable software in `dotbin/extra/bin`
 
     `dotbin/extra/bin` and `dotbin/extra/symlink` should be added to PATH
 
-    `dotbin-extra link [--force]` will create symlinks from `portable` to `symlink`.
+    `dotbin-link [--force]` will create symlinks from `portable` to `symlink`.
     Create `dotbin/extra/portable/link` text file and put glob patterns relative
       to `dotbin/extra/portable`, one per line. One symlink will be created per glob file
     
@@ -27,7 +26,7 @@
     So you can install new portable software with
         cp -r <folder> ~/dotbin/extra
         vi ~/dotbin/extra/portable/link # add link
-        dotbin-extra link
+        dotbin-link
 
     Admin privilege and `ln` is required for `ln` on windows (`cargo install uu_ln`)
 """
@@ -43,19 +42,10 @@ WINDOWS = os.name == "nt"
 def find_extra_dir():
     return os.path.join(os.path.dirname(__file__), "extra")
 
-def setup():
-    extra_dir = find_extra_dir()
-    bin_dir = os.path.join(extra_dir, "bin")
-    portable_dir = os.path.join(extra_dir, "portable")
-    symlink_dir = os.path.join(extra_dir, "symlink")
-    os.makedirs(bin_dir, exist_ok=True)
-    os.makedirs(portable_dir, exist_ok=True)
-    os.makedirs(symlink_dir, exist_ok=True)
-
 def create_batch_shim(symlink_dir, path):
     name = os.path.basename(path)
     name, _ = os.path.splitext(name)
-    name = name + ".bat"
+    name = name + ".cmd"
     shim_path = os.path.join(symlink_dir, name)
     if os.path.exists(shim_path):
         return
@@ -63,7 +53,7 @@ def create_batch_shim(symlink_dir, path):
     with open(shim_path, "w", encoding="utf-8") as f:
         f.write("@echo off\r\n")
         executable = os.path.abspath(path)
-        f.write(f"call \"{executable}\" %*")
+        f.write(f"\"{executable}\" %*")
 
 def create_bash_shim(symlink_dir, path):
     name = os.path.basename(path)
@@ -77,7 +67,7 @@ def create_bash_shim(symlink_dir, path):
         f.write("#!/usr/bin/bash\n")
         executable = os.path.abspath(path)
         f.write(f"exec \"{executable}\" \"$@\"")
-    subprocess.run(["chmod", "+x", shim_path], check=True)
+    subprocess.run(["chmod", "+x", shim_path], check=True, shell=True)
 
 def create_shim(symlink_dir, path):
     if WINDOWS:
@@ -91,7 +81,7 @@ def create_link(symlink_dir, path):
     if os.path.exists(symlink_path):
         return
     print(f"ln -s {path} {symlink_path}")
-    subprocess.run(["ln", "-s", path, symlink_path], check=True)
+    subprocess.run(["ln", "-s", path, symlink_path], check=True, shell=True)
 
 def link_glob(symlink_dir, portable_dir, glob_pattern):
     if glob_pattern.startswith("shim:"):
@@ -119,7 +109,7 @@ def create_alias(symlink_dir, target, aliases):
         if os.path.exists(alias_path):
             continue
         print(f"ln -s {target_path} {alias_path}")
-        subprocess.run(["ln", "-s", target_path, alias_path], check=True)
+        subprocess.run(["ln", "-s", target_path, alias_path], check=True, shell=True)
 
 
 def link(force):
@@ -153,13 +143,5 @@ def link(force):
 
     
 if __name__ == "__main__":
-    if len(sys.argv) < 2:
-        print("Usage: dotbin-extra setup")
-        print("       dotbin-extra link [--force]")
-        sys.exit(1)
-    command = sys.argv[1]
-    if command == "setup":
-        setup()
-    elif command == "link":
-        force = len(sys.argv) > 2 and sys.argv[2] == "--force"
-        link(force)
+    force = len(sys.argv) > 1 and sys.argv[1] == "--force"
+    link(force)
