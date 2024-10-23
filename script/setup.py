@@ -116,7 +116,7 @@ if __name__ == "__main__":
     for script in scripts:
         create_script_shim(dotbin_bin, script ,
             lambda executable:
-                f"python \"{executable}\" %*" if WINDOWS else "exec \"{executable}\" \"$@\""
+                f"python \"{executable}\" %*" if WINDOWS else f"exec \"{executable}\" \"$@\""
                            )
     setup_coreutils(dotbin_home, dotbin_bin)
     setup_archlinux_utils(dotbin_home, dotbin_bin)
