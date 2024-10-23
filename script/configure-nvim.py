@@ -20,6 +20,9 @@ def copy_to_dotbin(dotbin_nvim):
     subprocess.run(["cp", "-r", os.path.join(NVIM_HOME, "lua"), dotbin_nvim], check=True, shell=True)
 
 def copy_to_user(dotbin_nvim):
+    if os.path.exists(NVIM_HOME):
+        shutil.rmtree(NVIM_HOME)
+    os.makedirs(NVIM_HOME, exist_ok=True)
     subprocess.run(["cp", os.path.join(dotbin_nvim, "init.lua"), NVIM_HOME], check=True, shell=True)
     after_dir = os.path.join(NVIM_HOME, "after")
     if os.path.exists(after_dir):
