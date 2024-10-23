@@ -30,7 +30,7 @@ def create_script_shim(dotbin_bin, script_path, get_script):
             f.write("#!/usr/bin/bash\n")
         f.write(get_script(executable))
     if not WINDOWS:
-        subprocess.run(["chmod", "+x", shim_path], check=True, shell=True)
+        subprocess.run(["chmod", "+x", shim_path], check=True)
 
 def ps_probe_command(command):
     result = subprocess.run(["pwsh", "-NoLogo", "-NoProfile", "-Command", "& { Test-Path Alias:"+command+" }"], capture_output=True)
@@ -104,7 +104,7 @@ def setup_archlinux_utils(dotbin_home, dotbin_bin):
         print(script)
         target=os.path.join(dotbin_bin, script)
         shutil.copyfile(os.path.join(dotbin_archlinux, script), target)
-        subprocess.run(["chmod", "+x", target], check=True, shell=True)
+        subprocess.run(["chmod", "+x", target], check=True)
 
 if __name__ == "__main__":
     dotbin_home = get_dotbin_home()

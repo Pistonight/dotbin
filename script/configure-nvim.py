@@ -3,7 +3,9 @@ import sys
 import subprocess
 import shutil
 
-if sys.platform == "win32":
+WINDOWS = sys.platform == "win32"
+
+if WINDOWS:
     NVIM_HOME = "~\\\\AppData\\\\Local\\\\nvim"
 else:
     NVIM_HOME = "~/.config/nvim"
@@ -15,23 +17,23 @@ def copy_to_dotbin(dotbin_nvim):
     if os.path.exists(dotbin_nvim):
         shutil.rmtree(dotbin_nvim)
     os.makedirs(dotbin_nvim, exist_ok=True)
-    subprocess.run(["cp", os.path.join(NVIM_HOME, "init.lua"), dotbin_nvim], check=True, shell=True)
-    subprocess.run(["cp", "-r", os.path.join(NVIM_HOME, "after"), dotbin_nvim], check=True, shell=True)
-    subprocess.run(["cp", "-r", os.path.join(NVIM_HOME, "lua"), dotbin_nvim], check=True, shell=True)
+    subprocess.run(["cp", os.path.join(NVIM_HOME, "init.lua"), dotbin_nvim], check=True, shell=WINDOWS)
+    subprocess.run(["cp", "-r", os.path.join(NVIM_HOME, "after"), dotbin_nvim], check=True, shell=WINDOWS)
+    subprocess.run(["cp", "-r", os.path.join(NVIM_HOME, "lua"), dotbin_nvim], check=True, shell=WINDOWS)
 
 def copy_to_user(dotbin_nvim):
     if os.path.exists(NVIM_HOME):
         shutil.rmtree(NVIM_HOME)
     os.makedirs(NVIM_HOME, exist_ok=True)
-    subprocess.run(["cp", os.path.join(dotbin_nvim, "init.lua"), NVIM_HOME], check=True, shell=True)
+    subprocess.run(["cp", os.path.join(dotbin_nvim, "init.lua"), NVIM_HOME], check=True, shell=WINDOWS)
     after_dir = os.path.join(NVIM_HOME, "after")
     if os.path.exists(after_dir):
         shutil.rmtree(after_dir)
     lua_dir = os.path.join(NVIM_HOME, "lua")
     if os.path.exists(lua_dir):
         shutil.rmtree(os.path.join(NVIM_HOME, "lua"))
-    subprocess.run(["cp", "-r", os.path.join(dotbin_nvim, "after"), NVIM_HOME], check=True, shell=True)
-    subprocess.run(["cp", "-r", os.path.join(dotbin_nvim, "lua"), NVIM_HOME], check=True, shell=True)
+    subprocess.run(["cp", "-r", os.path.join(dotbin_nvim, "after"), NVIM_HOME], check=True, shell=WINDOWS)
+    subprocess.run(["cp", "-r", os.path.join(dotbin_nvim, "lua"), NVIM_HOME], check=True, shell=WINDOWS)
 
 if __name__ == "__main__":
     dotbin_nvim = os.path.join(DOTBIN_CONFIG, "nvim")

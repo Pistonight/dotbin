@@ -67,7 +67,7 @@ def create_bash_shim(symlink_dir, path, shim_name):
         f.write("#!/usr/bin/bash\n")
         executable = os.path.abspath(path)
         f.write(f"exec \"{executable}\" \"$@\"")
-    subprocess.run(["chmod", "+x", shim_path], check=True, shell=True)
+    subprocess.run(["chmod", "+x", shim_path], check=True)
 
 def create_shim(symlink_dir, path, shim_name):
     if WINDOWS:
@@ -81,7 +81,7 @@ def create_link(symlink_dir, path):
     if os.path.exists(symlink_path):
         return
     print(f"ln -s {path} {symlink_path}")
-    subprocess.run(["ln", "-s", path, symlink_path], check=True, shell=True)
+    subprocess.run(["ln", "-s", path, symlink_path], check=True, shell=WINDOWS)
 
 
 def create_alias(symlink_dir, target, aliases, shim):
@@ -97,7 +97,7 @@ def create_alias(symlink_dir, target, aliases, shim):
             if os.path.exists(alias_path):
                 continue
             print(f"ln -s {target} {alias_path}")
-            subprocess.run(["ln", "-s", target, alias_path], check=True, shell=True)
+            subprocess.run(["ln", "-s", target, alias_path], check=True, shell=WINDOWS)
 
 def add_link(symlink_dir, portable_dir, config: str):
     original_config = config
@@ -124,7 +124,7 @@ def add_link(symlink_dir, portable_dir, config: str):
             print(f"warning: `which` used without `alises`, skipping")
             return
         config = config[6:]
-        result = subprocess.run(["which", config], capture_output=True, shell=True)
+        result = subprocess.run(["which", config], capture_output=True, shell=WINDOWS)
         if result.returncode != 0:
             print(f"warning: no match for \"which:{config}\"")
             return
