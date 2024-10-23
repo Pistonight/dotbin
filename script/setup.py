@@ -74,6 +74,7 @@ def setup_coreutils(dotbin_home, dotbin_bin):
                 continue
         create_script_shim(dotbin_bin, util, lambda x: f"coreutils {os.path.basename(x)} %*")
     ps_profile_dir = os.path.dirname(subprocess.run(["pwsh", "-NoLogo", "-NoProfile", "-Command", "& { echo $PROFILE.CurrentUserCurrentHost }"], check=True, capture_output=True).stdout.decode().strip())
+    os.makedirs(ps_profile_dir, exist_ok=True)
 
     to_add = set()
     with Pool() as p:
