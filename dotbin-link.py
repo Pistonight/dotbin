@@ -1,4 +1,3 @@
-#!usr/bin/env python
 """
     Manager for dotbin/extra
 

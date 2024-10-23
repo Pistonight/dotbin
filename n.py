@@ -1,4 +1,3 @@
-#!usr/bin/env python
 """Prints information about the number n"""
 import sys
 import struct
