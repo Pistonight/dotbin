@@ -1,9 +1,18 @@
 import os
+import sys
 import shutil
 import subprocess
 from multiprocessing import Pool
 
-WINDOWS =  os.name == "nt"
+WINDOWS = os.name == "nt"
+
+def get_arg(name, default=None):
+    for i, arg in enumerate(sys.argv):
+        if arg == name:
+            if i + 1 < len(sys.argv):
+                return sys.argv[i + 1]
+            return True
+    return default
 
 def get_dotbin_home():
     return os.path.dirname(os.path.dirname(__file__))
@@ -59,6 +68,11 @@ def setup_coreutils(dotbin_home, dotbin_bin):
         shutil.copyfile(os.path.join(dotbin_windows, script), target)
 
     # uutils/coreutils
+    ps_profile = get_arg("--ps-profile", "CurrentUserCurrentHost")
+    if ps_profile not in ["CurrentUserCurrentHost", "CurrentUserAllHosts", "AllUsersCurrentHost", "AllUsersAllHosts"]:
+        print(f"Invalid --ps-profile: {ps_profile}")
+        print("Execute '$Profile | select *' to get the valid profiles")
+        sys.exit(1)
     try:
         result = subprocess.run(["coreutils", "--list"], check=True, capture_output=True)
     except:
@@ -73,7 +87,7 @@ def setup_coreutils(dotbin_home, dotbin_bin):
                 create_script_shim(dotbin_bin, util, lambda _: "eza %*")
                 continue
         create_script_shim(dotbin_bin, util, lambda x: f"coreutils {os.path.basename(x)} %*")
-    ps_profile_dir = os.path.dirname(subprocess.run(["pwsh", "-NoLogo", "-NoProfile", "-Command", "& { echo $PROFILE.CurrentUserCurrentHost }"], check=True, capture_output=True).stdout.decode().strip())
+    ps_profile_dir = os.path.dirname(subprocess.run(["pwsh", "-NoLogo", "-NoProfile", "-Command", f"& {{ echo $PROFILE.{ps_profile} }}"], check=True, capture_output=True).stdout.decode().strip())
     os.makedirs(ps_profile_dir, exist_ok=True)
 
     to_add = set()
