@@ -5,10 +5,9 @@ import shutil
 WINDOWS = sys.platform == "win32"
 
 if WINDOWS:
-    NVIM_HOME = "~\\\\AppData\\\\Local\\\\nvim"
+    NVIM_HOME = os.path.join(os.path.expanduser("~"), "AppData", "Local", "nvim")
 else:
-    NVIM_HOME = "~/.config/nvim"
-NVIM_HOME = os.path.expanduser(NVIM_HOME)
+    NVIM_HOME = os.path.join(os.path.expanduser("~"), ".config/nvim")
 
 DOTBIN_CONFIG = os.path.join(os.path.dirname(os.path.dirname(__file__)), "dotconfig")
 
