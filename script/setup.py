@@ -68,7 +68,7 @@ def setup_coreutils(dotbin_home, dotbin_bin):
         shutil.copyfile(os.path.join(dotbin_windows, script), target)
 
     # uutils/coreutils
-    ps_profile = get_arg("--ps-profile", "CurrentUserCurrentHost")
+    ps_profile = get_arg("--ps-profile", "AllUsersCurrentHost")
     if ps_profile not in ["CurrentUserCurrentHost", "CurrentUserAllHosts", "AllUsersCurrentHost", "AllUsersAllHosts"]:
         print(f"Invalid --ps-profile: {ps_profile}")
         print("Execute '$Profile | select *' to get the valid profiles")
