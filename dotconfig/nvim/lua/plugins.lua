@@ -6,15 +6,14 @@ return require("packer").startup(function(use)
     use "wbthomason/packer.nvim"
     -- copilot
     use 'github/copilot.vim'
-    -- vscode-ize
-    use 'Mofiqul/vscode.nvim'         -- color scheme
+    -- UX
+    use { "catppuccin/nvim", as = "catppuccin" } -- color scheme
     use 'nvim-tree/nvim-tree.lua'     -- file tree
     use 'nvim-tree/nvim-web-devicons' -- icons
     use 'nvim-lualine/lualine.nvim'   -- status line
     -- tree sitter parser
     use 'nvim-treesitter/nvim-treesitter'
     use 'nvim-treesitter/nvim-treesitter-context'
-    use 'IndianBoy42/tree-sitter-just'
     -- telescope fuzzy finder
     use 'nvim-telescope/telescope.nvim'
     use 'nvim-telescope/telescope-ui-select.nvim'
@@ -23,7 +22,6 @@ return require("packer").startup(function(use)
     use 'mbbill/undotree'
     use 'terrortylor/nvim-comment'
     use 'voldikss/vim-floaterm'
-    use 'ThePrimeagen/harpoon'
     use 'lukas-reineke/indent-blankline.nvim'
     -- lsp zero
     use {

@@ -1,6 +1,5 @@
 import os
 import sys
-import subprocess
 import shutil
 
 WINDOWS = sys.platform == "win32"
@@ -13,33 +12,110 @@ NVIM_HOME = os.path.expanduser(NVIM_HOME)
 
 DOTBIN_CONFIG = os.path.join(os.path.dirname(os.path.dirname(__file__)), "dotconfig")
 
+def copy_config_file(src, dst, ignore_keep=False):
+    """
+        Copy src to dst
+
+        If ignore_keep, don't respect @keep-start or @keep-end
+    """
+    dir_path = os.path.dirname(dst)
+    if not os.path.exists(dir_path):
+        os.makedirs(dir_path, exist_ok=True)
+
+    # if dst doesn't exist, just copy src to dst
+    if not os.path.exists(dst):
+        shutil.copyfile(src, dst)
+        return
+
+    # always process keep sections, for validation
+    keep_sections = []
+    with open(dst, "r", encoding="utf-8") as f:
+        current_keep_section = []
+        in_keep_scope = False
+        for line in f:
+            if not in_keep_scope:
+                if line.startswith("-- @keep-start"):
+                    in_keep_scope = True
+                    current_keep_section = []
+            else:
+                if line.startswith("-- @keep-end"):
+                    in_keep_scope = False
+                    keep_sections.append(current_keep_section)
+                else:
+                    current_keep_section.append(line.rstrip())
+        if in_keep_scope:
+            raise ValueError("Keep section not closed")
+    if ignore_keep:
+        shutil.copyfile(src, dst)
+        return
+
+    lines = []
+    with open(src, "r", encoding="utf-8") as f:
+        current_keep_section_i = -1
+        in_keep_scope = False
+        for line in f:
+            if not in_keep_scope:
+                lines.append(line.rstrip())
+                if line.startswith("-- @keep-start"):
+                    current_keep_section_i += 1
+                    # only process section if it exists in dst
+                    # otherwise use the one from src
+                    if current_keep_section_i < len(keep_sections):
+                        in_keep_scope = True
+                        lines.extend(keep_sections[current_keep_section_i])
+            else:
+                if line.startswith("-- @keep-end"):
+                    in_keep_scope = False
+                    lines.append(line.rstrip())
+
+        if in_keep_scope:
+            raise ValueError("Keep section not closed")
+
+    with open(dst, "w", encoding="utf-8") as f:
+        f.write("\n".join(lines))
+
+
+def copy_config_dir(src, dst, path, ignore_keep=False):
+    src_path = os.path.join(src, path)
+    for entry in os.listdir(src_path):
+        sub_path = os.path.join(path, entry)
+        src_path = os.path.join(src, sub_path)
+        if os.path.isdir(src_path):
+            copy_config_dir(src, dst, sub_path, ignore_keep)
+        else:
+            dst_path = os.path.join(dst, sub_path)
+            print(f"cp {src_path} {dst_path}")
+            copy_config_file(src_path, dst_path, ignore_keep=ignore_keep)
+
+
+FILES = [
+    # init entry point
+    "init.lua",
+]
+DIRS = [
+    "lua",
+    "after"
+]
+
 def copy_to_dotbin(dotbin_nvim):
+    print("updating dotconfig/nvim using user config")
     if os.path.exists(dotbin_nvim):
         shutil.rmtree(dotbin_nvim)
-    os.makedirs(dotbin_nvim, exist_ok=True)
-    subprocess.run(["cp", os.path.join(NVIM_HOME, "init.lua"), dotbin_nvim], check=True, shell=WINDOWS)
-    subprocess.run(["cp", "-r", os.path.join(NVIM_HOME, "after"), dotbin_nvim], check=True, shell=WINDOWS)
-    subprocess.run(["cp", "-r", os.path.join(NVIM_HOME, "lua"), dotbin_nvim], check=True, shell=WINDOWS)
+    for f in FILES:
+        copy_config_file(os.path.join(NVIM_HOME, f), os.path.join(dotbin_nvim, f))
+    for d in DIRS:
+        copy_config_dir(NVIM_HOME, dotbin_nvim, d)
 
 def copy_to_user(dotbin_nvim):
-    if os.path.exists(NVIM_HOME):
-        shutil.rmtree(NVIM_HOME)
-    os.makedirs(NVIM_HOME, exist_ok=True)
-    subprocess.run(["cp", os.path.join(dotbin_nvim, "init.lua"), NVIM_HOME], check=True, shell=WINDOWS)
-    after_dir = os.path.join(NVIM_HOME, "after")
-    if os.path.exists(after_dir):
-        shutil.rmtree(after_dir)
-    lua_dir = os.path.join(NVIM_HOME, "lua")
-    if os.path.exists(lua_dir):
-        shutil.rmtree(os.path.join(NVIM_HOME, "lua"))
-    subprocess.run(["cp", "-r", os.path.join(dotbin_nvim, "after"), NVIM_HOME], check=True, shell=WINDOWS)
-    subprocess.run(["cp", "-r", os.path.join(dotbin_nvim, "lua"), NVIM_HOME], check=True, shell=WINDOWS)
+    print("updating user config with dotconfig/nvim")
+    for f in FILES:
+        copy_config_file(os.path.join(dotbin_nvim, f), os.path.join(NVIM_HOME, f), ignore_keep=False)
+    for d in DIRS:
+        copy_config_dir(dotbin_nvim, NVIM_HOME, d, ignore_keep=False)
 
 if __name__ == "__main__":
     dotbin_nvim = os.path.join(DOTBIN_CONFIG, "nvim")
     if len(sys.argv) > 1 and sys.argv[1] == "update":
-        print("updating dotconfig/nvim using user config")
         copy_to_dotbin(dotbin_nvim)
     else:
-        print("updating user config with dotconfig/nvim")
         copy_to_user(dotbin_nvim)

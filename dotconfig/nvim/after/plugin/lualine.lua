@@ -1,6 +1,6 @@
 require('lualine').setup({
     options = {
-        theme = 'vscode',
+        theme = "catppuccin",
         disabled_filetypes = {
             'packer',
             'NvimTree',

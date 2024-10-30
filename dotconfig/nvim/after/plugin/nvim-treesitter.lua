@@ -12,5 +12,3 @@ require('nvim-treesitter.configs').setup({
         max_file_lines = nil,
     }
 })
--- additional parsers
-require('tree-sitter-just').setup({})

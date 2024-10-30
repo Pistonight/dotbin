@@ -50,8 +50,14 @@ local function on_attach_nvim_tree(bufnr)
     -- add custom
     vim.keymap.set('n', '<leader>t', '<C-W>l', opts 'Unfocus tree')
 end
+
+local integration = require("integration")
+
 require("nvim-tree").setup({
     on_attach = on_attach_nvim_tree,
+    git = {
+        enable = integration.git
+    },
     renderer = {
         icons = {
             glyphs = {
