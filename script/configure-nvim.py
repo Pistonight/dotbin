@@ -87,6 +87,28 @@ def copy_config_dir(src, dst, path, ignore_keep=False):
             print(f"cp {src_path} {dst_path}")
             copy_config_file(src_path, dst_path, ignore_keep=ignore_keep)
 
+def comment_out_file(file):
+    with open(file, "r", encoding="utf-8") as f:
+        lines = f.readlines()
+    # is it already commented out?
+    if all(line.startswith("--") for line in lines):
+        return
+
+    with open(file, "w", encoding="utf-8") as f:
+        for line in lines:
+            f.write("-- " + line)
+
+def comment_out_extra_files(src, dst, path):
+    dst_path = os.path.join(dst, path)
+    for entry in os.listdir(dst_path):
+        sub_path = os.path.join(path, entry)
+        src_path = os.path.join(src, sub_path)
+        dst_path = os.path.join(dst, sub_path)
+        if os.path.isdir(dst_path):
+            comment_out_extra_files(src, dst, sub_path)
+        elif not os.path.exists(src_path):
+            print(f"commenting out {dst_path}")
+            comment_out_file(dst_path)
 
 FILES = [
     # init entry point
@@ -111,6 +133,7 @@ def copy_to_user(dotbin_nvim):
     for f in FILES:
         copy_config_file(os.path.join(dotbin_nvim, f), os.path.join(NVIM_HOME, f), ignore_keep=False)
     for d in DIRS:
+        comment_out_extra_files(dotbin_nvim, NVIM_HOME, d)
         copy_config_dir(dotbin_nvim, NVIM_HOME, d, ignore_keep=False)
 
 if __name__ == "__main__":
