@@ -3,7 +3,10 @@
 -- defaults, will be overridden when updating config
 local defaults = {
     -- Git integration in nvim-tree (slow on some systems)
-    git = true
+    git = true,
+
+    -- Automatically install languages for treesitter (TS is slow to compile on some systems)
+    ts_auto_install = true,
 }
 
 -- overrides here won't be removed on merge

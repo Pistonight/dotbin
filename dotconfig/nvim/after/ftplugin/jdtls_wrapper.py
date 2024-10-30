@@ -47,4 +47,3 @@ if os.name == 'posix':
     os.execvp(java_path, exec_args)
 else:
     subprocess.run([java_path] + exec_args)
-

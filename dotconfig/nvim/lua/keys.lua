@@ -26,8 +26,8 @@ noremap('n', '<leader>mc', '<cmd>bdelete //3<cr><cmd>bdelete //2<cr><cmd>NvimTre
 
 -- cursor movement
 -- 15 lines is about where the text moves and I can still see what's going on
-noremap('n', '<C-d>', '15j')     -- bukl move down  
-noremap('n', '<C-u>', '15k')     -- bulk move up  
+noremap('n', '<C-d>', '15j')     -- bukl move down
+noremap('n', '<C-u>', '15k')     -- bulk move up
 noremap('n', 'n', 'nzz')         -- move to next match and center
 noremap('n', 'N', 'Nzz')         -- move to previous match and center
 

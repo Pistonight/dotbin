@@ -45,34 +45,37 @@ def copy_config_file(src, dst, ignore_keep=False):
                     current_keep_section.append(line.rstrip())
         if in_keep_scope:
             raise ValueError("Keep section not closed")
-    if ignore_keep:
-        shutil.copyfile(src, dst)
-        return
 
     lines = []
-    with open(src, "r", encoding="utf-8") as f:
-        current_keep_section_i = -1
-        in_keep_scope = False
-        for line in f:
-            if not in_keep_scope:
+    if ignore_keep:
+        with open(src, "r", encoding="utf-8") as f:
+            for line in f:
                 lines.append(line.rstrip())
-                if line.startswith("-- @keep-start"):
-                    current_keep_section_i += 1
-                    # only process section if it exists in dst
-                    # otherwise use the one from src
-                    if current_keep_section_i < len(keep_sections):
-                        in_keep_scope = True
-                        lines.extend(keep_sections[current_keep_section_i])
-            else:
-                if line.startswith("-- @keep-end"):
-                    in_keep_scope = False
-                    lines.append(line.rstrip())
 
-        if in_keep_scope:
-            raise ValueError("Keep section not closed")
+    else:
+        with open(src, "r", encoding="utf-8") as f:
+            current_keep_section_i = -1
+            in_keep_scope = False
+            for line in f:
+                if not in_keep_scope:
+                    lines.append(line.rstrip())
+                    if line.startswith("-- @keep-start"):
+                        current_keep_section_i += 1
+                        # only process section if it exists in dst
+                        # otherwise use the one from src
+                        if current_keep_section_i < len(keep_sections):
+                            in_keep_scope = True
+                            lines.extend(keep_sections[current_keep_section_i])
+                else:
+                    if line.startswith("-- @keep-end"):
+                        in_keep_scope = False
+                        lines.append(line.rstrip())
+
+            if in_keep_scope:
+                raise ValueError("Keep section not closed")
 
     with open(dst, "w", encoding="utf-8") as f:
-        f.write("\n".join(lines))
+        f.write("\n".join(lines)+ "\n")
 
 
 def copy_config_dir(src, dst, path, ignore_keep=False):
@@ -124,9 +127,9 @@ def copy_to_dotbin(dotbin_nvim):
     if os.path.exists(dotbin_nvim):
         shutil.rmtree(dotbin_nvim)
     for f in FILES:
-        copy_config_file(os.path.join(NVIM_HOME, f), os.path.join(dotbin_nvim, f))
+        copy_config_file(os.path.join(NVIM_HOME, f), os.path.join(dotbin_nvim, f), ignore_keep=True)
     for d in DIRS:
-        copy_config_dir(NVIM_HOME, dotbin_nvim, d)
+        copy_config_dir(NVIM_HOME, dotbin_nvim, d, ignore_keep=True)
 
 def copy_to_user(dotbin_nvim):
     print("updating user config with dotconfig/nvim")

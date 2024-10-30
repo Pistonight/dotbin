@@ -1,6 +1,8 @@
+local integration = require("integration")
+
 require('nvim-treesitter.configs').setup({
-    ensure_installed = { 'lua' },
-    auto_install = true,
+    ensure_installed = { },
+    auto_install = integration.ts_auto_install,
     highlight = {
         enable = true,
         additional_vim_regex_highlighting = false,

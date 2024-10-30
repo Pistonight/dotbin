@@ -73,4 +73,3 @@ require('jdtls').start_or_attach(config)
 vim.keymap.set('n', '<leader>O', function()
     require('jdtls').organize_imports()
 end)
-
