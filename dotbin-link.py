@@ -41,6 +41,18 @@ import shutil
 import glob
 
 WINDOWS = os.name == "nt"
+LN = shutil.which("ln")
+if not LN:
+    raise ValueError("ln not found")
+if WINDOWS:
+    CHMOD = None
+else:
+    CHMOD = shutil.which("chmod")
+
+def chmod():
+    if not CHMOD:
+        raise ValueError("chmod not found")
+    return CHMOD
 
 def find_extra_dir():
     return os.path.join(os.path.dirname(__file__), "extra")
@@ -66,7 +78,7 @@ def create_bash_shim(symlink_dir, path, shim_name):
         f.write("#!/usr/bin/bash\n")
         executable = os.path.abspath(path)
         f.write(f"exec \"{executable}\" \"$@\"")
-    subprocess.run(["chmod", "+x", shim_path], check=True)
+    subprocess.run([chmod(), "+x", shim_path], check=True)
 
 def create_shim(symlink_dir, path, shim_name):
     if WINDOWS:
@@ -80,7 +92,7 @@ def create_link(symlink_dir, path):
     if os.path.exists(symlink_path):
         return
     print(f"ln -s {path} {symlink_path}")
-    subprocess.run(["ln", "-s", path, symlink_path], check=True, shell=WINDOWS)
+    subprocess.run([LN, "-s", path, symlink_path], check=True)
 
 
 def create_alias(symlink_dir, target, aliases, shim):
@@ -96,7 +108,7 @@ def create_alias(symlink_dir, target, aliases, shim):
             if os.path.exists(alias_path):
                 continue
             print(f"ln -s {target} {alias_path}")
-            subprocess.run(["ln", "-s", target, alias_path], check=True, shell=WINDOWS)
+            subprocess.run([LN, "-s", target, alias_path], check=True)
 
 def add_link(symlink_dir, portable_dir, config: str):
     original_config = config
@@ -123,11 +135,11 @@ def add_link(symlink_dir, portable_dir, config: str):
             print(f"warning: `which` used without `alises`, skipping")
             return
         config = config[6:]
-        result = subprocess.run(["which", config], capture_output=True, shell=WINDOWS)
-        if result.returncode != 0:
+        result = shutil.which(config)
+        if not result:
             print(f"warning: no match for \"which:{config}\"")
             return
-        target = result.stdout.decode().strip()
+        target = result.strip()
     else:
         files = glob.glob(config, root_dir=portable_dir, recursive=True)
         if not files:

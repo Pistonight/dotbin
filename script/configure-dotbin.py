@@ -5,6 +5,24 @@ import subprocess
 from multiprocessing import Pool
 
 WINDOWS = os.name == "nt"
+PWSH = shutil.which("pwsh")
+CHMOD = shutil.which("chmod")
+CARGO = shutil.which("cargo")
+
+def pwsh():
+    if not PWSH:
+        raise ValueError("pwsh not found")
+    return PWSH
+
+def chmod():
+    if not CHMOD:
+        raise ValueError("chmod not found")
+    return CHMOD
+
+def cargo():
+    if not CARGO:
+        raise ValueError("cargo not found")
+    return CARGO
 
 def get_arg(name, default=None):
     for i, arg in enumerate(sys.argv):
@@ -39,13 +57,13 @@ def create_script_shim(dotbin_bin, script_path, get_script):
             f.write("#!/usr/bin/bash\n")
         f.write(get_script(executable))
     if not WINDOWS:
-        subprocess.run(["chmod", "+x", shim_path], check=True)
+        subprocess.run([chmod(), "+x", shim_path], check=True)
 
 def ps_probe_command(command):
-    result = subprocess.run(["pwsh", "-NoLogo", "-NoProfile", "-Command", "Test-Path Alias:"+command], capture_output=True)
+    result = subprocess.run([pwsh(), "-NoLogo", "-NoProfile", "-Command", "Test-Path Alias:"+command], capture_output=True)
     if result.returncode == 0 and result.stdout.decode().strip() != "False":
         return "alias", command
-    result = subprocess.run(["pwsh", "-NoLogo", "-NoProfile", "-Command", "Get-Command "+command], capture_output=True)
+    result = subprocess.run([pwsh(), "-NoLogo", "-NoProfile", "-Command", "Get-Command "+command], capture_output=True)
     if result.returncode == 0:
         return "command", command
     return None, command
@@ -56,7 +74,7 @@ def setup_coreutils(dotbin_home, dotbin_bin):
     
     # extra utils
     dotbin_windows = os.path.join(dotbin_home, "windows")
-    subprocess.run(["cargo", "build", "--bin", "which", "--release"], check=True, cwd=dotbin_windows)
+    subprocess.run([cargo(), "build", "--bin", "which", "--release"], check=True, cwd=dotbin_windows)
     shutil.copy(os.path.join(dotbin_windows, "target", "release", "which.exe"), dotbin_bin)
 
     # extra scripts
@@ -74,10 +92,16 @@ def setup_coreutils(dotbin_home, dotbin_bin):
         print("Execute '$Profile | select *' to get the valid profiles")
         sys.exit(1)
     try:
-        result = subprocess.run(["coreutils", "--list"], check=True, capture_output=True)
+        coreutils = shutil.which("coreutils")
+        if not coreutils:
+            raise ValueError("coreutils not found")
+        result = subprocess.run([coreutils, "--list"], check=True, capture_output=True)
     except:
-        subprocess.run(["cargo", "install", "coreutils"], check=True)
-        result = subprocess.run(["coreutils", "--list"], check=True, capture_output=True)
+        subprocess.run([cargo(), "install", "coreutils"], check=True)
+        coreutils = shutil.which("coreutils")
+        if not coreutils:
+            raise ValueError("coreutils not found after cargo install!!!")
+        result = subprocess.run([coreutils, "--list"], check=True, capture_output=True)
 
     util_names = list(set(line.strip() for line in result.stdout.decode().splitlines() if line.strip() != "["))
 
@@ -98,7 +122,7 @@ def setup_coreutils(dotbin_home, dotbin_bin):
                 create_script_shim(dotbin_bin, util, lambda _: "eza %*")
                 continue
         create_script_shim(dotbin_bin, util, lambda x: f"coreutils {os.path.basename(x)} %*")
-    ps_profile_dir = os.path.dirname(subprocess.run(["pwsh", "-NoLogo", "-NoProfile", "-Command", f"echo $PROFILE.{ps_profile}"], check=True, capture_output=True).stdout.decode().strip())
+    ps_profile_dir = os.path.dirname(subprocess.run([pwsh(), "-NoLogo", "-NoProfile", "-Command", f"echo $PROFILE.{ps_profile}"], check=True, capture_output=True).stdout.decode().strip())
     os.makedirs(ps_profile_dir, exist_ok=True)
 
     # special utils
@@ -128,7 +152,7 @@ def setup_archlinux_utils(dotbin_home, dotbin_bin):
         print(f"arch script: {script}")
         target=os.path.join(dotbin_bin, script)
         shutil.copyfile(os.path.join(dotbin_archlinux, script), target)
-        subprocess.run(["chmod", "+x", target], check=True)
+        subprocess.run([chmod(), "+x", target], check=True)
 
 def main():
     dotbin_home = get_dotbin_home()
