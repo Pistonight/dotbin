@@ -142,7 +142,7 @@ def copy_to_user(dotbin_nvim):
 
 if __name__ == "__main__":
     dotbin_nvim = os.path.join(DOTBIN_CONFIG, "nvim")
-    if len(sys.argv) > 1 and sys.argv[1] == "update":
+    if len(sys.argv) > 1 and sys.argv[1] == "--reverse":
         copy_to_dotbin(dotbin_nvim)
     else:
         copy_to_user(dotbin_nvim)
