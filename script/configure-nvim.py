@@ -102,6 +102,8 @@ def comment_out_file(file):
 
 def comment_out_extra_files(src, dst, path):
     dst_path = os.path.join(dst, path)
+    if not os.path.exists(dst_path):
+        return
     for entry in os.listdir(dst_path):
         sub_path = os.path.join(path, entry)
         src_path = os.path.join(src, sub_path)
