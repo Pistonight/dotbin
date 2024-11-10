@@ -1,7 +1,6 @@
 
 import os
 import sys
-import shutil
 
 WINDOWS = sys.platform == "win32"
 # config path is same on windows and unix
@@ -26,13 +25,6 @@ FORMAT_FLAGS = {
 HEADER = """# Starship configuration
 # Note: Format is managed by dotbin-cfg starship. Do not edit manually.
 # FORMAT"""
-
-def get_state(program, config):
-    if program not in config:
-        return "default"
-    if not config[program]:
-        return "disable"
-    return "enable"
 
 def print_help(just_list):
     if not just_list:
