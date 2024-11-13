@@ -46,25 +46,35 @@ noremap('n', '<C-w><', '<C-w>20<')
 noremap('n', '<C-w>+', '<C-w>10+')
 noremap('n', '<C-w>-', '<C-w>10-')
 
--- copy to system clipboard (commented out because it doesn't work over ssh)
--- workaround is sending the text over websocket to the host
--- noremap({ 'n', 'v' }, '<leader>y', '"+y')
--- save yanked text to host
--- for host windows machine, this uses powershell set-clipboard
--- for vm ssh session, this uses websocat and a websocket server running on the host machine
-vim.cmd([[
-if has("win32")
-    augroup YankToScript
-      autocmd!
-      autocmd TextYankPost * if v:register == 'a' | call writefile([getreg('a')], $HOME .. '/.vim/yank') | silent! execute '!(Get-Content $env:USERPROFILE/.vim/yank) -replace "`0","`n" | set-clipboard' | redraw! | endif
-    augroup END
+-- copy to system clipboard
+--   NOTE: we are using register "a", so it doesn't conflict
+--   with nvim's builtin functionality
+-- Windows always uses set-clipboard
+-- In Wayland, wl-copy is used.
+-- Otherwise, assume we are in SSH session, and use the HOST_MACHINE_IP
+-- environment variable to send it to host using websocket
+if vim.fn.has("win32") ~= 0 then
+    vim.cmd([[
+augroup YankToScript
+  autocmd!
+  autocmd TextYankPost * if v:register == 'a' | call writefile([getreg('a')], $LOCALAPPDATA .. '/.config/nvim/.yank') | silent! execute '!(Get-Content $env:LOCALAPPDATA/.config/nvim/.yank) -replace "`0","`n" | set-clipboard' | redraw! | endif
+augroup END
+    ]])
+elseif vim.fn.executable("wl-copy") ~= 0 then
+    vim.cmd([[
+augroup YankToScript
+  autocmd!
+  autocmd TextYankPost * if v:register == 'a' | call writefile([getreg('a')], '/tmp/yank') | silent! execute '!bash -c "cat /tmp/yank | tr ''\0'' ''\n'' | wl-copy -n"' | redraw! | endif
+augroup END
+    ]])
 else
-    augroup YankToScript
-      autocmd!
-      autocmd TextYankPost * if v:register == 'a' | call writefile([getreg('a')], '/tmp/yank') | silent! execute '!bash -c "source ~/.bashrc && cat /tmp/yank | websocat -1 -t -u ws://$HOST_MACHINE_IP:8881"' | redraw! | endif
-    augroup END
-endif
-]])
+    vim.cmd([[
+augroup YankToScript
+  autocmd!
+  autocmd TextYankPost * if v:register == 'a' | call writefile([getreg('a')], '/tmp/yank') | silent! execute '!bash -c "source ~/.bashrc && cat /tmp/yank | websocat -1 -t -u ws://$HOST_MACHINE_IP:8881"' | redraw! | endif
+augroup END
+    ]])
+end
 
 noremap('v', '<leader>y', '"ay')
 

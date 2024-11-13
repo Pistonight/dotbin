@@ -21,29 +21,27 @@ def copy_config_file(src, dst, ignore_keep=False):
     if not os.path.exists(dir_path):
         os.makedirs(dir_path, exist_ok=True)
 
-    # if dst doesn't exist, just copy src to dst
-    if not os.path.exists(dst):
-        shutil.copyfile(src, dst)
-        return
-
-    # always process keep sections, for validation
     keep_sections = []
-    with open(dst, "r", encoding="utf-8") as f:
-        current_keep_section = []
-        in_keep_scope = False
-        for line in f:
-            if not in_keep_scope:
-                if line.startswith("-- @keep-start"):
-                    in_keep_scope = True
-                    current_keep_section = []
-            else:
-                if line.startswith("-- @keep-end"):
-                    in_keep_scope = False
-                    keep_sections.append(current_keep_section)
+    if not os.path.exists(dst):
+        ignore_keep = True
+    else:
+        # process keep sections
+        with open(dst, "r", encoding="utf-8") as f:
+            current_keep_section = []
+            in_keep_scope = False
+            for line in f:
+                if not in_keep_scope:
+                    if line.startswith("-- @keep-start"):
+                        in_keep_scope = True
+                        current_keep_section = []
                 else:
-                    current_keep_section.append(line.rstrip())
-        if in_keep_scope:
-            raise ValueError("Keep section not closed")
+                    if line.startswith("-- @keep-end"):
+                        in_keep_scope = False
+                        keep_sections.append(current_keep_section)
+                    else:
+                        current_keep_section.append(line.rstrip())
+            if in_keep_scope:
+                raise ValueError("Keep section not closed")
 
     lines = []
     if ignore_keep:
@@ -73,8 +71,13 @@ def copy_config_file(src, dst, ignore_keep=False):
             if in_keep_scope:
                 raise ValueError("Keep section not closed")
 
-    with open(dst, "w", encoding="utf-8") as f:
-        f.write("\n".join(lines)+ "\n")
+    content = "\n".join(lines)
+    while content.endswith("\n") or content.endswith("\r"):
+        content = content[:-1]
+    content += "\n"
+
+    with open(dst, "w", encoding="utf-8", newline="\n") as f:
+        f.write(content)
 
 
 def copy_config_dir(src, dst, path, ignore_keep=False):
