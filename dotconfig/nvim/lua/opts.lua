@@ -41,18 +41,20 @@ vim.opt.sidescrolloff = 8
 -- note that setting it in this way doesn't work in telescope preview
 -- txtpp
 vim.cmd [[
-  au BufRead,BufNewFile *.md.txtpp                set filetype=markdown
-  au BufRead,BufNewFile *.html.txtpp              set filetype=html
-  au BufRead,BufNewFile *.rs.txtpp                set filetype=rust
-  au BufRead,BufNewFile *.ts.txtpp                set filetype=typescript
-  au BufRead,BufNewFile *.tsx.txtpp               set filetype=typescriptreact
-  au BufRead,BufNewFile *.js.txtpp                set filetype=javascript
-  au BufRead,BufNewFile *.jsx.txtpp               set filetype=javascriptreact
-  au BufRead,BufNewFile *.py.txtpp                set filetype=python
-  au BufRead,BufNewFile *.css.txtpp               set filetype=css
-  au BufRead,BufNewFile *.json.txtpp              set filetype=json
-  au BufRead,BufNewFile *.yaml.txtpp              set filetype=yaml
-  au BufRead,BufNewFile *.yml.txtpp               set filetype=yaml
-  au BufRead,BufNewFile *.toml.txtpp              set filetype=toml
-  au BufRead,BufNewFile *.bash.txtpp              set filetype=bash
+  au BufRead,BufNewFile *.md.txtpp        set filetype=markdown
+  au BufRead,BufNewFile *.html.txtpp      set filetype=html
+  au BufRead,BufNewFile *.rs.txtpp        set filetype=rust
+  au BufRead,BufNewFile *.ts.txtpp        set filetype=typescript
+  au BufRead,BufNewFile *.tsx.txtpp       set filetype=typescriptreact
+  au BufRead,BufNewFile *.js.txtpp        set filetype=javascript
+  au BufRead,BufNewFile *.jsx.txtpp       set filetype=javascriptreact
+  au BufRead,BufNewFile *.py.txtpp        set filetype=python
+  au BufRead,BufNewFile *.css.txtpp       set filetype=css
+  au BufRead,BufNewFile *.json.txtpp      set filetype=json
+  au BufRead,BufNewFile *.yaml.txtpp      set filetype=yaml
+  au BufRead,BufNewFile *.yml.txtpp       set filetype=yaml
+  au BufRead,BufNewFile *.toml.txtpp      set filetype=toml
+  au BufRead,BufNewFile *.bash.txtpp      set filetype=bash
+
+  au BufRead,BufNewFile *.rasi            set filetype=css
 ]]

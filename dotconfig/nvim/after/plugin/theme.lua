@@ -39,6 +39,9 @@ require("catppuccin").setup({
             -- make line numbers easier to read
             LineNr = { fg = mocha.overlay2 },
 
+            -- keywords
+            ["@keyword.export"] = { link = "Include" },
+
             -- functions
             Function = { fg = mocha.yellow },
             ["@function.builtin"] = { link = "Function" },
