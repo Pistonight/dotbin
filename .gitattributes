@@ -1,0 +1,2 @@
+# *.lsl are LiveSplit config files in XML
+*.lsl linguist-language=XML
