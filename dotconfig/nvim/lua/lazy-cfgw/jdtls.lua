@@ -1,6 +1,9 @@
--- This file executes when a java file loads
+-- This file executes when a jdtls plugin loads
 
 -- JDTLS Environment Variables
+--
+-- TODO: make this better
+--
 --   ECLIPSE_JDTLS_HOME: path to jdtls installation
 --   ECLIPSE_JDK_HOME: path to JDK used to launch eclipse jdtls
 --
@@ -18,7 +21,7 @@ local python_path = vim.fn.exepath('python')
 local config = {
     cmd = {
         python_path,
-        nvim_config_path .. '/after/ftplugin/jdtls_wrapper.py',
+        nvim_config_path .. '/lua/lsp-wrapper/jdtls_wrapper.py',
         vim.env.ECLIPSE_JDK_HOME .. '/bin/java',
         eclipse_jdtls_home,
         project_name

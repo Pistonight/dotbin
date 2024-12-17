@@ -54,6 +54,12 @@ noremap('n', '<C-w>-', '<C-w>10-')
 -- Otherwise, assume we are in SSH session, and use the HOST_MACHINE_IP
 -- environment variable to send it to host using websocket
 if vim.fn.has("win32") ~= 0 then
+vim.cmd([[
+    set shell=pwsh
+    set shellcmdflag=-command
+    set shellquote="
+    set shellxquote=
+]])
     vim.cmd([[
 augroup YankToScript
   autocmd!
