@@ -39,6 +39,8 @@ require("catppuccin").setup({
             -- make line numbers easier to read
             LineNr = { fg = mocha.overlay2 },
 
+            ["@string.regexp"] = { fg = mocha.red },
+
             -- keywords
             ["@keyword.export"] = { link = "Include" },
 
@@ -59,6 +61,7 @@ require("catppuccin").setup({
             ["@type.builtin"] = { link = "Type" },
             ["@type.builtin.cpp"] = { link = "Type" },
             ["@lsp.type.interface"] = {link = "Type"},
+            ["@tag.tsx"] = { link = "Type" },
 
             -- punctuation
             Operator = { fg = mocha.sapphire },
